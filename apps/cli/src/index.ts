@@ -38,6 +38,8 @@ interface CliFlags {
   research?: 'openai-deep-research' | 'basic' | 'stub';
   depth?: 'quick' | 'standard' | 'deep';
   languages?: string;
+  blackboard?: boolean;
+  theme?: 'whiteboard' | 'blackboard';
 }
 
 const program = new Command();
@@ -56,6 +58,8 @@ program
   .option('--short', 'Vertical hook-first reel (defaults aspect to 9:16)')
   .option('--cinematic', 'Research-backed full-frame documentary (Ken Burns + emotional VO)')
   .option('--draw', 'Hand-drawn animation: trace each element on like a pen (default: fade in)')
+  .option('--blackboard', 'Blackboard / chalkboard theme with chalk-white drawings on dark slate')
+  .option('--theme <theme>', 'Board theme: whiteboard (default) | blackboard')
   .option(
     '--research <kind>',
     'Research provider for --cinematic: openai-deep-research | basic | stub',
@@ -113,6 +117,7 @@ program
       language: flags.lang,
       aspectRatio,
       ...(flags.cinematic ? { format: 'cinematic' } : flags.short ? { format: 'short' } : {}),
+      ...(flags.blackboard ? { theme: 'blackboard' } : flags.theme ? { theme: flags.theme } : {}),
       ...(flags.draw ? { animation: 'draw' } : {}),
       ...(flags.research ? { research: flags.research } : {}),
       ...(flags.depth ? { researchDepth: flags.depth } : {}),

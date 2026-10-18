@@ -278,9 +278,9 @@ async function renderFinalizedScript(
     if (translated) captionTexts = translated;
   }
 
-  // Animation style is a render directive (not LLM content): set it on the meta
-  // right before render so the player picks the reveal mode. Opt-in; default fade.
-  if (opts.animation) script.meta.animation = opts.animation;
+  // Animation style is a render directive: default to 'draw' (pen tracing) for an engaging whiteboard/chalkboard feel.
+  script.meta.animation = opts.animation ?? 'draw';
+  if (opts.theme) script.meta.theme = opts.theme;
 
   emit(onProgress, { phase: 'render', message: 'rendering silent video' });
   const rendered = await renderScript({

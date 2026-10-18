@@ -10,6 +10,9 @@ export interface OpenAIProviderOptions {
   baseURL?: string;
   /** "json_schema" (strict), "json_object" (lax), or "text". Default json_object — gpt-4o-mini's json_schema strict mode rejects additionalProperties:true. */
   structuredMode?: 'json_schema' | 'json_object' | 'text';
+  temperature?: number;
+  maxTokens?: number;
+  reasoningEffort?: 'low' | 'medium' | 'high';
 }
 
 export class OpenAIProvider implements LLMProvider {
@@ -17,6 +20,9 @@ export class OpenAIProvider implements LLMProvider {
   private readonly client: OpenAI;
   private readonly model: string;
   private readonly structuredMode: 'json_schema' | 'json_object' | 'text';
+  private readonly temperature?: number;
+  private readonly maxTokens?: number;
+  private readonly reasoningEffort?: 'low' | 'medium' | 'high';
 
   constructor(opts: OpenAIProviderOptions = {}) {
     const apiKey = opts.apiKey ?? process.env['OPENAI_API_KEY'];
@@ -29,18 +35,26 @@ export class OpenAIProvider implements LLMProvider {
     });
     this.model = opts.model ?? process.env['OPENAI_MODEL'] ?? 'gpt-5.5';
     this.structuredMode = opts.structuredMode ?? 'json_object';
+    this.temperature = opts.temperature;
+    this.maxTokens = opts.maxTokens;
+    this.reasoningEffort = opts.reasoningEffort;
   }
 
   async generateScript(input: ScriptGenerationInput) {
     const responseFormat = this.buildResponseFormat();
-    const response = await this.client.chat.completions.create({
+    const params: Record<string, unknown> = {
       model: this.model,
-      ...(responseFormat ? { response_format: responseFormat } : {}),
       messages: [
         { role: 'system', content: systemPromptFor(input.format) },
         { role: 'user', content: userPromptFor(input) },
       ],
-    });
+    };
+    if (typeof this.temperature === 'number') params['temperature'] = this.temperature;
+    if (typeof this.maxTokens === 'number') params['max_tokens'] = this.maxTokens;
+    if (this.reasoningEffort) params['reasoning_effort'] = this.reasoningEffort;
+    if (responseFormat) params['response_format'] = responseFormat;
+
+    const response = await (this.client.chat.completions.create as any)(params);
 
     const text = response.choices[0]?.message?.content;
     if (!text) throw new Error('OpenAIProvider: empty response');

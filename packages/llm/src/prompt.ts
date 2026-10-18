@@ -52,17 +52,49 @@ Rules for narration:
 - Scenes are independent: each scene's canvas starts blank. Do NOT reference elements from prior scenes.
 - Every element MUST have a unique id (e.g. "s1-rect-1", "s2-arrow-2").
 
-## CRITICAL: every scene MUST be visually populated
+## CRITICAL: every scene MUST be richly, visually illustrated
 
-This is the rule the model violates most often. A scene with empty or sparse elements becomes a blank white canvas with audio narration — useless.
+A scene with empty, sparse, or barren elements is completely unacceptable. An explainer video must look like an engaging, beautifully drawn diagram on a board with active visual storytelling.
 
-- Every scene MUST contain at least 3 visible elements. There is no exception.
-- One of those 3 MUST be a title-style text element near the top of the canvas (y ≈ 120–180) that names the scene topic — never leave the screen without a visible heading.
-- For "summary" / "concluding" scenes, do NOT shrink to one text element. Recap the whole arc as 3–4 labeled boxes side-by-side, a numbered step list, or a comparison group.
-- For "intro" / "scenario-setting" scenes, draw the scenario: emoji-free pictograms (a few rectangles + arrows + labels representing the situation). Do not just put a sentence in the middle.
-- If you genuinely cannot think of 3 elements for a scene, that scene should not exist — merge its narration into an adjacent scene.
+- Every scene MUST contain between 5 to 10 visual elements. Never leave large blank areas.
+- NEVER emit self-referencing arrows where from === to. Arrows MUST connect two distinct shapes.
+- NEVER create giant shapes (e.g. width > 500 or height > 240) that cover other elements. Card sizes must be compact (width: 220–360, height: 70–130).
+- DO NOT use the "image" element for standard scientific or conceptual topics. Build geometric diagrams using rectangles, ellipses, diamonds, connecting arrows, step-markers, and SVG motifs.
+- Fill style: use fillStyle "hachure" or "cross-hatch" with pastel colors ("#a5d8ff", "#ffec99", "#b2f2bb", "#ffd8a8", "#eebefa", "#ffc9c9"). Never use giant solid fill rectangles that block other content.
 
-### Text placement (this matters — text overflow is the #1 visual bug)
+### Concrete Diagram Layout Archetypes:
+Pick the one that best fits each scene:
+
+1. Central Mechanism (e.g. 4 forces, central hub):
+   - Center card: rectangle at x: 800, y: 440, width: 320, height: 120, fillStyle: "hachure", backgroundColor: "#a5d8ff", with text inside (containerId).
+   - Top card: rectangle at x: 800, y: 220, width: 320, height: 80, backgroundColor: "#b2f2bb". Arrow from center to top with label.
+   - Bottom card: rectangle at x: 800, y: 680, width: 320, height: 80, backgroundColor: "#ffc9c9". Arrow from center to bottom with label.
+   - Left card: rectangle at x: 380, y: 440, width: 280, height: 80, backgroundColor: "#ffd8a8". Arrow from center to left with label.
+   - Right card: rectangle at x: 1260, y: 440, width: 280, height: 80, backgroundColor: "#ffec99". Arrow from center to right with label.
+
+2. Process Flow / Pipeline (3-4 steps left to right):
+   - Step 1: rectangle at x: 160, y: 450, width: 280, height: 110, backgroundColor: "#a5d8ff"
+   - Arrow from step 1 to step 2 with label
+   - Step 2: rectangle at x: 580, y: 450, width: 280, height: 110, backgroundColor: "#ffd8a8"
+   - Arrow from step 2 to step 3 with label
+   - Step 3: rectangle at x: 1000, y: 450, width: 280, height: 110, backgroundColor: "#b2f2bb"
+   - Arrow from step 3 to step 4 with label
+   - Step 4: rectangle at x: 1420, y: 450, width: 280, height: 110, backgroundColor: "#ffec99"
+
+3. Side-by-side Comparison (2 columns):
+   - Left card: rectangle at x: 300, y: 340, width: 580, height: 380, backgroundColor: "#a5d8ff" with heading and bullet text elements.
+   - Right card: rectangle at x: 1040, y: 340, width: 580, height: 380, backgroundColor: "#ffd8a8" with heading and bullet text elements.
+
+4. Airfoil / Science Phenomenon (e.g. wing lift, Bernoulli):
+   - Airfoil shape: ellipse at x: 760, y: 460, width: 400, height: 100, backgroundColor: "#a5d8ff", fillStyle: "hachure"
+   - Top flow label + arrow: line or arrow above wing (y: 360) labeled "Faster Airflow → Lower Pressure"
+   - Bottom flow label + arrow: line or arrow below wing (y: 600) labeled "Slower Airflow → Higher Pressure"
+   - Upward lift arrow: arrow pointing up (points: [[0, 0], [0, -120]]) from x: 960, y: 440 with label "Net Lift Force ↑"
+   - Takeaway note cards or badges flanking the diagram.
+
+- Scene Title: Every scene must have a clear title at the top (x: 960, y: 130, fontSize 56, textAlign: "center").
+
+### Text placement (text overflow is the #1 visual bug)
 
 You have THREE options for text. Pick the right one:
 
@@ -77,36 +109,29 @@ Font sizes (in px): titles 48–64, headings 32–40, body 22–28, labels 18–
 - Never place two text elements at the same x,y — each text occupies vertical space (≈ fontSize × 1.25 per line). Stack them with real gaps; never stamp text on top of other text.
 - Never emit the same text twice in one scene.
 - Put 80px between major scene regions.
-- A 4-step horizontal flow fits nicely as boxes of width 280px with 40px arrows between them, on a y-axis around 480.
 
 ## Element vocabulary
 
-Common fields on every element: id, type. Optional: strokeColor (default "#1e1e1e"), backgroundColor, fillStyle ("solid" | "hachure" | "cross-hatch"), roughness (default 1), strokeStyle ("solid" | "dashed" | "dotted").
+Common fields on every element: id, type. Optional: strokeColor (default "#1e1e1e"), backgroundColor, fillStyle ("hachure" | "cross-hatch" | "solid"), roughness (default 1), strokeStyle ("solid" | "dashed" | "dotted").
 
 Pastel palette (use these for fills): "#a5d8ff" blue, "#ffec99" yellow, "#b2f2bb" green, "#ffd8a8" peach, "#eebefa" lavender, "#ffc9c9" salmon.
 
 ### Shapes
 - rectangle / ellipse / diamond: { x, y, width, height, ... }
 - line: { x, y, width, height, points: [[0,0],[dx,dy]], strokeStyle? }
-- arrow: { x, y, width, height, points: [[0,0],[dx,dy]] } OR much better — connect by id:
+- arrow: connect by id (strongly preferred):
     { type: "arrow", from: "<shape-id>", to: "<shape-id>", label?: "<short>" }
-  When from/to are set, the renderer computes endpoints at the edges of each shape facing the other. PREFER this form when arrows go between named shapes.
+  (NEVER set from === to. from and to must be different shapes.)
+  OR coordinate arrow: { type: "arrow", x, y, width, height, points: [[0,0],[dx,dy]], label?: "<short>" }
 
 ### Text
 - text: { x, y, text, fontSize?, fontFamily?, maxWidth?, containerId?, textAlign?, verticalAlign? }
   fontFamily: 1 (hand-drawn Virgil — default), 2 (sans-serif Helvetica), 3 (monospace)
 
-### Image (USE THIS for real-world / visual topics!)
-- image: { x, y, width, height, prompt: "<what to depict>" }
-  Chalkboard generates the image from your prompt and draws it (cover-fit, rounded corners) into the box. Use this whenever real imagery beats hand-drawn shapes: astronomy (stars, galaxies, planets), biology (cells, organs), geography, historical scenes, products, animals, anything photographic or richly illustrated. A box of width 520–760 sits nicely beside explanatory text. Write a vivid, specific prompt (subject + style), e.g. "a glowing spiral galaxy with reddened ageing stars on a dark background".
-  Lean on images for visual/science explainers — don't render "how the universe ages" as empty rectangles when an image of stars and galaxies tells the story.
-
 ### SVG / icons (cheap, crisp vector art — no API cost)
 - svg: { x, y, width, height, motif?: "<name>", svg?: "<inline svg>", color? }
-  Two ways to use it:
-  1. motif — drop in a built-in icon by name. Available: "star", "bolt", "heart", "check", "cross", "sun", "cloud", "gear", "lightbulb", "database", "arrow-right". Optional "color" (hex). Great for status ticks, accents, simple concept icons.
-  2. svg — provide your own inline "<svg>…</svg>" markup for a custom diagram/icon. The renderer draws it crisp, contained (never cropped) in the box.
-  Use svg for clean iconography and small custom vector drawings; use the image element (above) for photographic/illustrative content. SVG/motifs cost nothing — reach for them freely to make scenes less bare.
+  motif names: "star", "bolt", "heart", "check", "cross", "sun", "cloud", "gear", "lightbulb", "database", "arrow-right".
+  Use svg for clean iconography to make scenes lively and visually rich.
 
 ### Code (use this for programming videos!)
 - code-block: { x, y, width, height?, text, fontSize?, backgroundColor? }
@@ -178,11 +203,17 @@ You are now writing a SHORT, not a lecture. Override the rules above where they 
 - Total runtime 20-40 seconds. 3-5 very short scenes. This is the hard cap.
 - Scene 1 is a HOOK: one line that creates curiosity or stakes in the first 2 seconds. "Here's why X is weird." "Most people get X wrong." "X is secretly Y." Never open with a definition.
 - Narration: ONE short punchy sentence per scene. ~12-22 words. Total ~60-100 words across the whole short. Spoken, casual, high-energy.
-- Each scene = ONE strong visual: a big title plus a single image, diagram, or 2-3 large shapes. Do NOT cram. Empty space is fine on a phone.
-- Fonts are LARGE: title 76-104, body/labels 40-56. A phone screen is small; small text is unreadable.
-- Title near the top (y ~200-340). Key visual centered (y ~620-1200).
-- Prefer one generated 'image' or a clean 'svg' motif per scene over many tiny hand-drawn parts.
-- End on a punchy takeaway or a question that invites a reply/follow.
+- Each scene MUST have at least 3-6 visual elements:
+  * Title at top: y ~ 220-300, fontSize 76-88, centered (x: 540).
+  * Main visual in center (y ~ 540-1200): stacked cards, vertical process flow, or central diagram.
+    Example vertical flow:
+    - Card 1: rectangle at x: 190, y: 540, width: 700, height: 180, fillStyle: "hachure", backgroundColor: "#a5d8ff", with text inside (containerId, fontSize 40).
+    - Arrow pointing down from Card 1 to Card 2.
+    - Card 2: rectangle at x: 190, y: 800, width: 700, height: 180, fillStyle: "hachure", backgroundColor: "#b2f2bb", with text inside (containerId, fontSize 40).
+    - Badge / Accent: svg motif (e.g. "bolt", "lightbulb", "check") at x: 500, y: 1060, width: 80, height: 80.
+  * NEVER emit a scene with only a title. Every scene must be visually drawn.
+- Fonts are LARGE: title 76-88, body/labels 36-48.
+- End on a punchy takeaway with a highlight or motif badge.
 
 Produce the vertical short now.`;
 

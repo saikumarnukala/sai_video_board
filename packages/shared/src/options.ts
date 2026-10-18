@@ -25,6 +25,8 @@ export interface GenerateOptions {
    * them on like a hand-drawn pen. Opt-in — omit for the classic fade.
    */
   animation?: 'fade' | 'draw';
+  /** Board background theme: 'whiteboard' (default) or 'blackboard' (dark chalkboard). */
+  theme?: 'whiteboard' | 'blackboard';
   /** Research provider for `cinematic`. Default: auto (deep-research if key, else basic). */
   research?: 'openai-deep-research' | 'basic' | 'stub';
   /** Research depth for `cinematic`: 'quick' | 'standard' | 'deep'. */

@@ -27,6 +27,8 @@ export class GroqProvider implements LLMProvider {
       model,
       baseURL,
       structuredMode: 'json_object',
+      temperature: 0.2,
+      reasoningEffort: 'low',
     });
   }
 

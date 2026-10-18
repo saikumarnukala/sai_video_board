@@ -30,6 +30,14 @@
     return;
   }
 
+  const isBlackboard =
+    (cfg.script && cfg.script.meta && cfg.script.meta.theme === 'blackboard') ||
+    cfg.theme === 'blackboard';
+  if (isBlackboard) {
+    document.body.classList.add('blackboard');
+  }
+  const defaultStroke = isBlackboard ? '#f4f6f4' : '#1e1e1e';
+
   // Wait for RoughJS to be available.
   const waitFor = (test, label, timeoutMs = 10000) =>
     new Promise((resolve, reject) => {
@@ -197,7 +205,7 @@
 
   // -------- drawing primitives --------
   function paintBg() {
-    ctx.fillStyle = '#fafafa';
+    ctx.fillStyle = isBlackboard ? '#18201a' : '#fafafa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
@@ -215,7 +223,8 @@
   }
 
   function commonOpts(el) {
-    const stroke = el.strokeColor || '#1e1e1e';
+    const stroke =
+      el.strokeColor && el.strokeColor !== '#1e1e1e' ? el.strokeColor : defaultStroke;
     const fill =
       el.backgroundColor && el.backgroundColor !== 'transparent' ? el.backgroundColor : undefined;
     const opts = {
@@ -570,33 +579,40 @@
 
     // If text is anchored to a container, center vertically within it when
     // requested via verticalAlign='middle'. Otherwise y is the top anchor.
-    let y0 = el.y;
+    let y0 = el.y ?? 0;
+    let x0 = el.x ?? 0;
     if (el.containerId && byId && byId[el.containerId]) {
       const parent = byId[el.containerId];
-      const parentTop = parent.y ?? el.y;
+      const parentTop = parent.y ?? 0;
+      const parentLeft = parent.x ?? 0;
       const parentH = parent.height ?? 0;
+      const pad = typeof el.padding === 'number' ? el.padding : 24;
+      x0 = parentLeft + pad;
       if (el.verticalAlign === 'middle') {
         const blockH = lines.length * lineHeight;
         y0 = parentTop + Math.max(0, (parentH - blockH) / 2);
+      } else {
+        y0 = parentTop + pad;
       }
     }
 
-    return { lines, fontSize, family, maxWidth, align, lineHeight, y0 };
+    return { lines, fontSize, family, maxWidth, align, lineHeight, y0, x0 };
   }
 
   function drawText(el, byId) {
     const lay = layoutText(el, byId);
-    ctx.fillStyle = el.strokeColor || '#1e1e1e';
+    ctx.fillStyle =
+      el.strokeColor && el.strokeColor !== '#1e1e1e' ? el.strokeColor : defaultStroke;
     ctx.font = `${lay.fontSize}px ${lay.family}`;
     ctx.textBaseline = 'top';
 
     for (let i = 0; i < lay.lines.length; i++) {
       const line = lay.lines[i];
-      let x = el.x;
+      let x = lay.x0;
       if (lay.align !== 'left' && lay.maxWidth) {
         const w = ctx.measureText(line).width;
-        if (lay.align === 'center') x = el.x + (lay.maxWidth - w) / 2;
-        else if (lay.align === 'right') x = el.x + (lay.maxWidth - w);
+        if (lay.align === 'center') x = lay.x0 + (lay.maxWidth - w) / 2;
+        else if (lay.align === 'right') x = lay.x0 + (lay.maxWidth - w);
       }
       ctx.fillText(line, x, lay.y0 + i * lay.lineHeight);
     }
@@ -613,11 +629,14 @@
     if (w <= 0 || h <= 0) return;
 
     if (!img) {
-      // Source missing/failed — draw a soft placeholder box so the slot still
-      // reads as intentional rather than a blank gap.
+      // Source missing/failed — draw a subtle dashed frame so it doesn't blot out the board
       ctx.save();
-      ctx.fillStyle = '#e9ecef';
+      ctx.fillStyle = isBlackboard ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
+      ctx.strokeStyle = isBlackboard ? 'rgba(244,246,244,0.4)' : '#ced4da';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
       ctx.fillRect(x, y, w, h);
+      ctx.strokeRect(x, y, w, h);
       ctx.restore();
       return;
     }
@@ -974,7 +993,8 @@
   // would uncover the middles of stacked lines simultaneously — this doesn't.
   function drawTextRevealed(el, byId, p) {
     const lay = layoutText(el, byId);
-    ctx.fillStyle = el.strokeColor || '#1e1e1e';
+    ctx.fillStyle =
+      el.strokeColor && el.strokeColor !== '#1e1e1e' ? el.strokeColor : defaultStroke;
     ctx.font = `${lay.fontSize}px ${lay.family}`;
     ctx.textBaseline = 'top';
     const n = lay.lines.length || 1;
@@ -983,10 +1003,10 @@
       if (lineP <= 0) continue;
       const line = lay.lines[i];
       const w = ctx.measureText(line).width;
-      let x = el.x;
+      let x = lay.x0;
       if (lay.align !== 'left' && lay.maxWidth) {
-        if (lay.align === 'center') x = el.x + (lay.maxWidth - w) / 2;
-        else if (lay.align === 'right') x = el.x + (lay.maxWidth - w);
+        if (lay.align === 'center') x = lay.x0 + (lay.maxWidth - w) / 2;
+        else if (lay.align === 'right') x = lay.x0 + (lay.maxWidth - w);
       }
       const ly = lay.y0 + i * lay.lineHeight;
       if (lineP >= 1) {

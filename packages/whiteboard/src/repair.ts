@@ -132,7 +132,7 @@ function dedupeText(
   const seen: { key: string; x: number; y: number }[] = [];
   const kept: ExcalidrawElementLike[] = [];
   for (const el of elements) {
-    if (el.type !== 'text' || !el.text) {
+    if (el.type !== 'text' || !el.text || el.containerId) {
       kept.push(el);
       continue;
     }
@@ -164,7 +164,7 @@ function separateText(
 
   const shiftById = new Map<number, number>();
   for (const { el, i } of order) {
-    if (el.type !== 'text') continue;
+    if (el.type !== 'text' || el.containerId) continue;
     let box = estimateBox(el);
     let guard = 0;
     while (guard < 8) {
@@ -193,7 +193,7 @@ function clampToSafe(
   safe: SafeArea,
   report: RepairReport,
 ): ExcalidrawElementLike {
-  if (!BOXED.has(el.type)) return el;
+  if (!BOXED.has(el.type) || el.containerId) return el;
   const box = estimateBox(el);
   const safeW = safe.maxX - safe.minX;
   const safeH = safe.maxY - safe.minY;
@@ -247,6 +247,31 @@ function clampToSafe(
   return next;
 }
 
+// Clean up invalid or distorting elements:
+// - Drop arrows that point from a shape to itself (from === to)
+// - Fix zero-dimension shapes (width/height 0)
+// - Soften oversized solid shapes so they don't cover other elements
+function sanitizeElements(elements: ExcalidrawElementLike[]): ExcalidrawElementLike[] {
+  const result: ExcalidrawElementLike[] = [];
+  for (const el of elements) {
+    if (el.type === 'arrow' && el.from && el.from === el.to) {
+      continue; // drop self-referencing arrow
+    }
+    let sanitized = { ...el };
+    if (el.type === 'rectangle' || el.type === 'ellipse' || el.type === 'diamond') {
+      const w = typeof sanitized.width === 'number' ? sanitized.width : 0;
+      const h = typeof sanitized.height === 'number' ? sanitized.height : 0;
+      if (w < 20) sanitized.width = 160;
+      if (h < 20) sanitized.height = 80;
+      if (w > 600 && h > 240 && sanitized.fillStyle === 'solid') {
+        sanitized.fillStyle = 'hachure';
+      }
+    }
+    result.push(sanitized);
+  }
+  return result;
+}
+
 /** Repair a whole script. Pure — returns a new script plus a change report. */
 export function repairScript(script: SceneScript): RepairResult {
   const report: RepairReport = { clamped: 0, scaled: 0, dedupedText: 0, movedOverlaps: 0 };
@@ -254,7 +279,8 @@ export function repairScript(script: SceneScript): RepairResult {
 
   const scenes = script.scenes.map((scene) => {
     if (!scene.elements || scene.elements.length === 0) return scene;
-    let els = dedupeText(scene.elements, report);
+    let els = sanitizeElements(scene.elements);
+    els = dedupeText(els, report);
     els = separateText(els, report);
     els = els.map((el) => clampToSafe(el, safe, report));
     return { ...scene, elements: els };

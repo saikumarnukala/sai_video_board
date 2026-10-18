@@ -110,6 +110,8 @@ export interface SceneScriptMeta {
    * along their length). Opt-in — undefined behaves as 'fade'.
    */
   animation?: 'fade' | 'draw';
+  /** Board background theme: 'whiteboard' (default) or 'blackboard' (dark chalkboard). */
+  theme?: 'whiteboard' | 'blackboard';
   /** Named voice roles → provider voice ids (e.g. { narrator: "...", quote: "..." }). */
   voices?: Record<string, string>;
 }
