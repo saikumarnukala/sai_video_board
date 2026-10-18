@@ -124,8 +124,8 @@ app.post('/generate', async (c) => {
 
 // Provider config pass-through. Server is meant for a private network; if you
 // expose this publicly, validate kinds, deny api-key fields, and add auth.
-const LLM_KINDS = new Set(['anthropic', 'openai', 'ollama', 'stub']);
-const TTS_KINDS = new Set(['piper', 'openai', 'elevenlabs', 'stub']);
+const LLM_KINDS = new Set(['anthropic', 'openai', 'groq', 'ollama', 'stub']);
+const TTS_KINDS = new Set(['piper', 'openai', 'elevenlabs', 'deepgram', 'stub']);
 
 function parseLLMProvider(value: unknown): LLMProviderConfig | undefined {
   if (!value || typeof value !== 'object') return undefined;

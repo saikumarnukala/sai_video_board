@@ -13,9 +13,9 @@ interface CliFlags {
   lang: string;
   aspect: '16:9' | '9:16' | '1:1';
   voice?: string;
-  llm?: 'anthropic' | 'openai' | 'ollama' | 'stub';
+  llm?: 'anthropic' | 'openai' | 'groq' | 'ollama' | 'stub';
   llmModel?: string;
-  tts?: 'piper' | 'openai' | 'elevenlabs' | 'stub';
+  tts?: 'piper' | 'openai' | 'elevenlabs' | 'deepgram' | 'stub';
   ttsModel?: string;
   ttsVoice?: string;
   workDir?: string;
@@ -66,9 +66,9 @@ program
     'Dub into multiple languages, comma-separated (e.g. en,hi,es) → one mp4 per language',
   )
   .option('--voice <id>', 'Voice id (provider-specific)')
-  .option('--llm <kind>', 'LLM provider: anthropic | openai | ollama | stub')
+  .option('--llm <kind>', 'LLM provider: anthropic | openai | groq | ollama | stub')
   .option('--llm-model <id>', 'LLM model id')
-  .option('--tts <kind>', 'TTS provider: piper | openai | elevenlabs | stub')
+  .option('--tts <kind>', 'TTS provider: piper | openai | elevenlabs | deepgram | stub')
   .option('--tts-model <id>', 'TTS model id')
   .option('--tts-voice <id>', 'TTS voice id')
   .option('--work-dir <path>', 'Working dir (kept around if set)')
@@ -179,7 +179,7 @@ program
   .option('-a, --aspect <ratio>', 'Aspect ratio', '16:9')
   .option('--format <fmt>', 'explainer | short | cinematic (cinematic researches first)')
   .option('--draw', 'Tag the script for hand-drawn animation (sets meta.animation=draw)')
-  .option('--llm <kind>', 'LLM provider: anthropic | openai | ollama | stub')
+  .option('--llm <kind>', 'LLM provider: anthropic | openai | groq | ollama | stub')
   .option('--llm-model <id>', 'LLM model id')
   .option(
     '--research <kind>',
@@ -340,6 +340,9 @@ function buildLLMConfig(flags: CliFlags): LLMProviderConfig {
   if (kind === 'openai') {
     return { kind: 'openai', ...(flags.llmModel ? { model: flags.llmModel } : {}) };
   }
+  if (kind === 'groq') {
+    return { kind: 'groq', ...(flags.llmModel ? { model: flags.llmModel } : {}) };
+  }
   if (kind === 'stub') {
     return { kind: 'stub' };
   }
@@ -352,6 +355,13 @@ function buildTTSConfig(flags: CliFlags): TTSProviderConfig {
   if (kind === 'openai') {
     return {
       kind: 'openai',
+      ...(flags.ttsModel ? { model: flags.ttsModel } : {}),
+      ...(flags.ttsVoice ? { voice: flags.ttsVoice } : {}),
+    };
+  }
+  if (kind === 'deepgram') {
+    return {
+      kind: 'deepgram',
       ...(flags.ttsModel ? { model: flags.ttsModel } : {}),
       ...(flags.ttsVoice ? { voice: flags.ttsVoice } : {}),
     };

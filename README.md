@@ -106,18 +106,20 @@ apps/
 
 | kind        | env / setup                                                                                  |
 | ----------- | -------------------------------------------------------------------------------------------- |
+| `groq`      | `GROQ_API_KEY` (default model: `llama-3.3-70b-versatile`)                                     |
 | `anthropic` | `ANTHROPIC_API_KEY` (default model: `claude-haiku-4-5-20251001`)                             |
 | `openai`    | `OPENAI_API_KEY`                                                                             |
 | `ollama`    | `OLLAMA_BASE_URL` (default `http://localhost:11434`), `OLLAMA_MODEL` (default `llama3.1:8b`) |
 | `stub`      | none; returns a fixed SceneScript, for tests                                                 |
 
-Auto-resolution order: `ANTHROPIC_API_KEY` → `OPENAI_API_KEY` → `ollama`.
+Auto-resolution order: `GROQ_API_KEY` → `ANTHROPIC_API_KEY` → `OPENAI_API_KEY` → `ollama`.
 Force a provider with `--llm <kind>` or `CHALKBOARD_LLM=stub`.
 
 ### TTS provider
 
 | kind         | env / setup                                                                 |
 | ------------ | --------------------------------------------------------------------------- |
+| `deepgram`   | `DEEPGRAM_API_KEY` (default model: `aura-asteria-en`)                       |
 | `piper`      | `piper` on PATH, `PIPER_MODEL` (or `PIPER_MODEL_<LANG>`) to a `.onnx` voice |
 | `openai`     | `OPENAI_API_KEY` (default model `tts-1`, voice `alloy`)                     |
 | `elevenlabs` | `ELEVENLABS_API_KEY`                                                        |

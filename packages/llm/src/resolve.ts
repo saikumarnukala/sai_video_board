@@ -1,5 +1,6 @@
 import type { LLMProviderConfig } from '@chalkboard/shared';
 import { AnthropicProvider } from './anthropic.js';
+import { GroqProvider } from './groq.js';
 import { OllamaProvider } from './ollama.js';
 import { OpenAIProvider } from './openai.js';
 import type { LLMProvider } from './provider.js';
@@ -19,6 +20,12 @@ export function resolveLLMProvider(config: LLMProviderConfig | undefined): LLMPr
         ...(c.model ? { model: c.model } : {}),
         ...(c.baseURL ? { baseURL: c.baseURL } : {}),
       });
+    case 'groq':
+      return new GroqProvider({
+        ...(c.apiKey ? { apiKey: c.apiKey } : {}),
+        ...(c.model ? { model: c.model } : {}),
+        ...(c.baseURL ? { baseURL: c.baseURL } : {}),
+      });
     case 'ollama':
       return new OllamaProvider({
         ...(c.baseURL ? { baseURL: c.baseURL } : {}),
@@ -31,6 +38,7 @@ export function resolveLLMProvider(config: LLMProviderConfig | undefined): LLMPr
 
 function defaultConfigFromEnv(): LLMProviderConfig {
   if (process.env['CHALKBOARD_LLM'] === 'stub') return { kind: 'stub' };
+  if (process.env['GROQ_API_KEY']) return { kind: 'groq' };
   if (process.env['ANTHROPIC_API_KEY']) return { kind: 'anthropic' };
   if (process.env['OPENAI_API_KEY']) return { kind: 'openai' };
   return { kind: 'ollama' };
