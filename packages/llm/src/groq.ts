@@ -18,7 +18,7 @@ export class GroqProvider implements LLMProvider {
         'GroqProvider: GROQ_API_KEY not set. Pass apiKey option or set the env var.',
       );
     }
-    const model = opts.model ?? process.env['GROQ_MODEL'] ?? 'llama-3.3-70b-versatile';
+    const model = opts.model ?? process.env['GROQ_MODEL'] ?? 'openai/gpt-oss-120b';
     const baseURL =
       opts.baseURL ?? process.env['GROQ_BASE_URL'] ?? 'https://api.groq.com/openai/v1';
 
